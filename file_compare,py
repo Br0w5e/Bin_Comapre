@@ -1,0 +1,45 @@
+import hashlib
+import os
+import difflib
+import re
+import webbrowser
+
+def get_file_md5(f):
+    m = hashlib.md5()
+    while True:
+        data = f.read(1024)  #将文件分块读取
+        if not data:
+            break
+        m.update(data)
+    return m.hexdigest()
+
+def readfile(filename):
+    fileHandle = open(filename,'r')
+    text = fileHandle.read().splitlines()
+    fileHandle.close()
+    return text
+
+if __name__ == '__main__':
+
+    with open('1.txt', 'rb') as f1, open('2.txt', 'rb') as f2:
+        file1_md5 = get_file_md5(f1)
+        file2_md5 = get_file_md5(f2)
+        if file1_md5 == file2_md5:
+            #打印一下
+            print('They are the same!')
+            print('file1_md5:', file1_md5)
+            print('file2_md5:', file2_md5)
+        else:
+            print('They are different!')
+            print('file1_md5:', file1_md5)
+            print('file2_md5:', file2_md5)
+            text1_lines = readfile('1.txt')
+            text2_lines = readfile('2.txt')
+            #比较并生成html文件格式
+            d = difflib.HtmlDiff()
+            #print(d.make_file(text1_lines, text2_lines))
+            
+            #写入文件，并把编码格式改变为GBK(默认为utf-8,这样会乱码的！)
+            with open('Compare_result.html', 'w') as f:
+                f.write(d.make_file(text1_lines, text2_lines).replace('utf-8', 'GBK', 1))  #通过观察，只替换一次，否则有可能改变文章内容
+            webbrowser.open('Compare_result.html')
